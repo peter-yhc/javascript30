@@ -4,3 +4,30 @@ body {
     align-items: center;
     transform: translate(0, 50%);
 }
+svg {
+    stroke: black;
+}
+
+.second-hand {
+    stroke-width: 3px;
+    stroke: red;
+    stroke-linecap: round;
+}
+
+.minute-hand {
+    stroke-width: 5px;
+    stroke-linecap: round;
+}
+
+.hour-hand {
+    stroke-width: 5px;
+    stroke-linecap: round;
+}
+
+.minute-tick {
+    stroke-width: 4px;
+}
+
+.second-tick {
+    stroke-width: 2px;
+}

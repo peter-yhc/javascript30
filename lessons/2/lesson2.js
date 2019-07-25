@@ -1,78 +1,118 @@
+/**
+ * Ref:
+ * https://bost.ocks.org/mike/join/
+ * http://bl.ocks.org/tomgp/6475678
+ **/
+
 const diameter = 500;
-const radius = diameter / 2;
-const frameWidth = 3;
+const faceRadius = diameter / 2;
+const clockStrokeWidth = 3;
+const clockRadius = faceRadius - clockStrokeWidth;
+const secondtickStart = clockRadius - 5;
+const secondtickLength = 5;
+const minutetickStart = clockRadius - 5;
+const minutetickLength = 10;
+const hourTextHeight = clockRadius - 25;
 
 const svg = d3.select('svg')
   .attr('width', diameter)
   .attr('height', diameter);
 
-const group = svg.append('g')
-  .attr('transform', `translate(${radius}, ${radius})`);
 
-const circle = group.append('circle')
-  .attr('r', radius - frameWidth)
-  .style('fill', 'white')
-  .style('stroke', 'black')
-  .style('stroke-width', frameWidth);
+const hourScale = d3.scaleLinear().range([0, 330]).domain([0, 11]);
+const minuteScale = d3.scaleLinear().range([0, 354]).domain([0, 59]);
+const secondScale = minuteScale;
 
-group.append('circle')
-  .attr('r', 5)
-  .style('fill', 'black');
+const clockData = [{
+  type: 'hour',
+  value: 0,
+  length: faceRadius - 100,
+  scale: hourScale
+}, {
+  type: 'minute',
+  value: 0,
+  length: faceRadius - 30,
+  scale: minuteScale
+}, {
+  type: 'second',
+  value: 0,
+  length: faceRadius - 40,
+  scale: secondScale
+}];
 
-const secondHand = group.append('line')
-  .attr('x1', 0)
-  .attr('y1', 0)
-  .attr('x2', 0)
-  .attr('y2', -(radius - 30))
-  .attr('stroke', 'red')
-  .attr('stroke-width', 2);
 
-const minuteHand = group.append('line')
-  .attr('x1', 0)
-  .attr('y1', 0)
-  .attr('x2', 0)
-  .attr('y2', -(radius - 70))
-  .attr('stroke', 'black')
-  .attr('stroke-width', 3);
+const drawClock = () => {
 
-const hourHand = group.append('line')
-  .attr('x1', 0)
-  .attr('y1', 0)
-  .attr('x2', 0)
-  .attr('y2', -(radius - 140))
-  .attr('stroke', 'black')
-  .attr('stroke-width', 3);
+  const clockFace = svg.append('g')
+    .attr('transform', `translate(${faceRadius}, ${faceRadius})`);
 
-const currentTime = new Date();
-let secondTracker = currentTime.getSeconds();
-let minuteTracker = currentTime.getMinutes();
-let hourTracker = currentTime.getHours();
+  clockFace.append('circle')
+    .attr('class', 'clock-face')
+    .attr('r', 5)
 
-const rotateMinutes = () => {
-  const minutePosition = minuteTracker / 60 * 360;
-  console.log(minutePosition)
-  minuteHand.attr('transform', `rotate(${minutePosition})`);
+  const handGroup = clockFace.append('g').attr('id', 'clock-hands');
+
+  handGroup.selectAll('line').data(clockData).enter()
+    .append('line')
+    .attr('class', d => d.type + '-hand')
+    .attr('x1', 0)
+    .attr('y1', 0)
+    .attr('x2', 0)
+    .attr('y2', d => -d.length)
+    .attr('transform', d => `rotate(${d.scale(d.value)})`);
+
+  clockFace.selectAll('second-tick')
+    .data(d3.range(0, 60))
+    .enter()
+    .append('line')
+    .attr('class', 'second-tick')
+    .attr('x1', 0)
+    .attr('y1', secondtickStart)
+    .attr('x2', 0)
+    .attr('y2', secondtickStart + secondtickLength)
+    .attr('transform', d => `rotate(${d * 6})`);
+
+  clockFace.selectAll('minute-tick')
+    .data(d3.range(0, 60, 5))
+    .enter()
+    .append('line')
+    .attr('class', 'minute-tick')
+    .attr('x1', 0)
+    .attr('y1', minutetickStart)
+    .attr('x2', 0)
+    .attr('y2', minutetickStart + minutetickLength)
+    .attr('transform', d => `rotate(${d * 6})`);
+
+  clockFace.selectAll('hour-labels')
+    .data(d3.range(1, 13))
+    .enter()
+    .append('text')
+    .attr('class', 'hour-labels')
+    .attr('text-anchor', 'middle')
+    .attr('x', d => hourTextHeight * Math.sin(Math.PI / 6 * d))
+    .attr('y', d => -hourTextHeight * Math.cos(Math.PI / 6 * d))
+    .attr('transform', 'translate(0, 5)')
+    .text(d => d);
 };
 
-const rotateHours = () => {
-  const hourPosition = hourTracker / 12 * 360;
-  hourHand.attr('transform', `rotate(${hourPosition})`)
-}
+const updateClock = () => {
+  const currentTime = new Date();
+  const seconds = currentTime.getSeconds();
+  const minutes = currentTime.getMinutes();
+  const hours = currentTime.getHours();
 
-const incrementSeconds = () => {
-  secondTracker += 6;
-  const secondPosition = secondTracker % 360;
-  secondHand.attr('transform', `rotate(${secondPosition})`);
+  clockData[0].value = (hours % 12) + minutes / 60;
+  clockData[1].value = minutes;
+  clockData[2].value = seconds;
 
-  console.log(secondTracker)
-  if (secondPosition === 0 && secondTracker === 360) {
-    minuteTracker += 1;
-    rotateMinutes();
-  }
-
-  setTimeout(incrementSeconds, 100);
+  d3.select('#clock-hands').selectAll('line')
+    .data(clockData)
+    .transition()
+    .attr('transform', d => `rotate(${d.scale(d.value)})`);
 };
 
-incrementSeconds();
-rotateMinutes();
-rotateHours();
+drawClock();
+
+setInterval(() => {
+  updateClock();
+}, 1000);
