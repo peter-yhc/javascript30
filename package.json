@@ -1,0 +1,18 @@
+{
+  "name": "javascript30",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx live-server --ignore=**/node_modules/**,**/.idea/**"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@me.github.com:peter-yhc/javascript30.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "live-server": "^1.2.1"
+  }
+}
