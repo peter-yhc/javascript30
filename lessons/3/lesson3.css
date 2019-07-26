@@ -1,0 +1,30 @@
+
+:root {
+    --bg-color: #FFFF00;
+    --translate: 50%;
+    --blur: 10px;
+}
+
+body {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 200px auto;
+}
+
+img {
+    grid-row: 2/3;
+    transform: translate(var(--translate), var(--translate));
+    background: var(--bg-color);
+    filter: blur(var(--blur));
+    padding: 2em;
+}
+
+.option-container {
+    grid-row: 1/2;
+}
+
+.option {
+    display: flex;
+    flex-direction: column;
+    width: 150px;
+}
